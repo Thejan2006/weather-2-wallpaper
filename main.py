@@ -1,6 +1,6 @@
 import time
 
-import image_downlad
+import image_download
 import weather_check
 
 
@@ -22,7 +22,7 @@ def main() -> None:
     )
     weather_engine.start()
 
-    downloader = image_downlad.ImageDownloader()
+    downloader = image_download.ImageDownloader()
     print(f"Image directory ready at: {downloader.download_dir}")
 
     try:
