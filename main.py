@@ -1,12 +1,15 @@
 import time
 
-import image_download
+import engine
 import weather_check
  
 
-CITY = "colombo"
+CITY = "kandy"
 API_KEY = "e813e05e3126dc4400acb7f4e624f521"
 COUNTRY_CODE = "LK"
+WEATHER_REFRESH_SECONDS = 300
+WALLPAPER_POLL_SECONDS = 5
+STATUS_PRINT_SECONDS = 10
 
 
 def main() -> None:
@@ -17,24 +20,33 @@ def main() -> None:
         city=CITY,
         api_key=API_KEY,
         country_code=COUNTRY_CODE,
-        delay=1,
+        delay=WEATHER_REFRESH_SECONDS,
         weather=weather,
     )
     weather_engine.start()
 
-    downloader = image_download.ImageDownloader()
-    print(f"Image directory ready at: {downloader.download_dir}")
-    print("Downloading image...")
-    downloaded_image = downloader.download(image_download.DEFAULT_IMAGE_URL)
-    print(f"Image download complete: {downloaded_image}")
+    wallpaper_engine = engine.WallpaperChanger(
+        weather=weather,
+        delay=WALLPAPER_POLL_SECONDS,
+    )
+    wallpaper_engine.start()
+    print(f"Wallpaper directory ready at: {wallpaper_engine.output_dir}")
+    print("Press Ctrl+C to stop the app.")
 
     try:
-        for _ in range(2):
-            print(weather)
-            time.sleep(1)
+        while True:
+            if weather:
+                print(weather)
+            else:
+                print("Waiting for weather data...")
+            time.sleep(STATUS_PRINT_SECONDS)
+    except KeyboardInterrupt:
+        print("\nStopping dynamic weather app...")
     finally:
+        wallpaper_engine.stop()
         weather_engine.stop()
-        weather_engine.join(timeout=2)
+        wallpaper_engine.join(timeout=5)
+        weather_engine.join(timeout=5)
 
 
 if __name__ == "__main__":
